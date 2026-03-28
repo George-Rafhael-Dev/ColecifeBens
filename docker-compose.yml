@@ -9,8 +9,9 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-command: sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && php artisan key:generate && php artisan serve --host=0.0.0.0 --port=8000"    # depends_on:
-      # - db
+    command: sh -c "if [ ! -f .env ]; then cp .env.example .env; fi && php artisan key:generate && php artisan serve --host=0.0.0.0 --port=8000" 
+    # depends_on:
+    # - db
 
 #   db:
 #     image: mysql:8
