@@ -15,5 +15,7 @@ WORKDIR /app
 # Copia projeto
 COPY . .
 
-# Instala dependências PHP
-RUN composer install
+# Permissão pro script
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["sh", "entrypoint.sh"]
