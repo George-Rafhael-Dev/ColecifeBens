@@ -3,6 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\AvaliacaoController;
+use App\Http\Controllers\CategoriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,4 +25,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::apiResource('produtos', ProdutoController::class);
+    Route::apiResource('usuarios', UsuarioController::class);
+    Route::apiResource('categorias', CategoriaController::class);
+    Route::apiResource('pedidos', PedidoController::class);
+    Route::apiResource('pedidos', PedidoController::class);
+    Route::apiResource('avaliacoes', AvaliacaoController::class);
 });
