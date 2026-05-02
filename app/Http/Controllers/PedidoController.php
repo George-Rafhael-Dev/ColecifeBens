@@ -18,98 +18,48 @@ class PedidoController extends Controller
 
     private function savePedidos($pedidos)
     {
-        Storage::put('pedidos.json', json_encode($pedidos, JSON_PRETTY_PRINT));
+        Storage::put('pedidos.json', json_encode($pedidos));
     }
 
-    private function usuarioExiste($id)
+    private function getPrecoProduto($id)
     {
-        if (!Storage::exists('usuarios.json')) return false;
-
-        $usuarios = json_decode(Storage::get('usuarios.json'), true) ?? [];
-
-        foreach ($usuarios as $u) {
-            if ($u['id_usuario'] == $id) return true;
-        }
-
-        return false;
-    }
-
-    private function buscarProduto($id)
-    {
-        if (!Storage::exists('produtos.json')) return null;
+        if (!Storage::exists('produtos.json')) return 0;
 
         $produtos = json_decode(Storage::get('produtos.json'), true) ?? [];
 
         foreach ($produtos as $p) {
-            if ($p['id_produto'] == $id) return $p;
+            if ($p['id_produto'] == $id) {
+                return $p['preco'];
+            }
         }
 
-        return null;
+        return 0;
     }
 
-    private function calcularTotal($produtosRequest)
+    private function calcularTotal($produtos)
     {
         $total = 0;
 
-        foreach ($produtosRequest as $item) {
-            $produto = $this->buscarProduto($item['id_produto']);
-
-            if (!$produto) {
-                return null; 
-            }
-
-            $total += $produto['preco'];
+        foreach ($produtos as $item) {
+            $total += $this->getPrecoProduto($item['id_produto']);
         }
 
         return $total;
     }
 
-    private function getProdutosDetalhados($ids)
-    {
-        $resultado = [];
-
-        foreach ($ids as $id) {
-            $produto = $this->buscarProduto($id);
-
-            if ($produto) {
-                $resultado[] = [
-                    'id_produto' => $produto['id_produto'],
-                    'nome' => $produto['nome'],
-                    'preco' => $produto['preco']
-                ];
-            }
-        }
-
-        return $resultado;
-    }
-
     public function index()
     {
-        $pedidos = $this->getPedidos();
-
-        foreach ($pedidos as &$pedido) {
-            $ids = array_column($pedido['produtos'], 'id_produto');
-            $pedido['produtos'] = $this->getProdutosDetalhados($ids);
-        }
-
-        return response()->json($pedidos);
+        return response()->json($this->getPedidos());
     }
+
 
     public function store(Request $request)
     {
-        if (!$this->usuarioExiste($request->id_usuario)) {
-            return response()->json(['erro' => 'Usuário não existe'], 400);
-        }
-
-        $total = $this->calcularTotal($request->produtos);
-
-        if ($total === null) {
-            return response()->json(['erro' => 'Produto inválido'], 400);
-        }
-
         $pedidos = $this->getPedidos();
 
         $id = count($pedidos) ? max(array_column($pedidos, 'id_pedido')) + 1 : 1;
+
+        $total = $this->calcularTotal($request->produtos);
 
         $novo = [
             'id_pedido' => $id,
@@ -120,7 +70,7 @@ class PedidoController extends Controller
             'status_pagamento' => 'aguardando',
             'metodo_pagamento' => $request->metodo_pagamento,
             'data_pagamento' => null,
-            'valor_total' => $total 
+            'valor_total' => $total
         ];
 
         $pedidos[] = $novo;
@@ -134,10 +84,6 @@ class PedidoController extends Controller
     {
         foreach ($this->getPedidos() as $pedido) {
             if ($pedido['id_pedido'] == $id) {
-
-                $ids = array_column($pedido['produtos'], 'id_produto');
-                $pedido['produtos'] = $this->getProdutosDetalhados($ids);
-
                 return response()->json($pedido);
             }
         }

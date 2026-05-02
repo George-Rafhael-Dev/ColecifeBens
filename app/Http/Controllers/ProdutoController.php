@@ -18,37 +18,7 @@ class ProdutoController extends Controller
 
     private function saveProdutos($produtos)
     {
-        Storage::put('produtos.json', json_encode($produtos, JSON_PRETTY_PRINT));
-    }
-
-    private function usuarioExiste($id)
-    {
-        if (!Storage::exists('usuarios.json')) return false;
-
-        $usuarios = json_decode(Storage::get('usuarios.json'), true) ?? [];
-
-        foreach ($usuarios as $u) {
-            if ($u['id_usuario'] == $id) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function categoriaExiste($id)
-    {
-        if (!Storage::exists('categorias.json')) return false;
-
-        $categorias = json_decode(Storage::get('categorias.json'), true) ?? [];
-
-        foreach ($categorias as $c) {
-            if ($c['id_categoria'] == $id) {
-                return true;
-            }
-        }
-
-        return false;
+        Storage::put('produtos.json', json_encode($produtos));
     }
 
     public function index()
@@ -58,14 +28,6 @@ class ProdutoController extends Controller
 
     public function store(Request $request)
     {
-        if (!$this->usuarioExiste($request->id_usuario)) {
-            return response()->json(['erro' => 'Usuário não existe'], 400);
-        }
-
-        if (!$this->categoriaExiste($request->id_categoria)) {
-            return response()->json(['erro' => 'Categoria não existe'], 400);
-        }
-
         $produtos = $this->getProdutos();
 
         $id = count($produtos) ? max(array_column($produtos, 'id_produto')) + 1 : 1;
@@ -106,14 +68,6 @@ class ProdutoController extends Controller
 
         foreach ($produtos as &$produto) {
             if ($produto['id_produto'] == $id) {
-
-                if ($request->id_usuario && !$this->usuarioExiste($request->id_usuario)) {
-                    return response()->json(['erro' => 'Usuário não existe'], 400);
-                }
-
-                if ($request->id_categoria && !$this->categoriaExiste($request->id_categoria)) {
-                    return response()->json(['erro' => 'Categoria não existe'], 400);
-                }
 
                 $produto['nome'] = $request->nome ?? $produto['nome'];
                 $produto['descricao'] = $request->descricao ?? $produto['descricao'];

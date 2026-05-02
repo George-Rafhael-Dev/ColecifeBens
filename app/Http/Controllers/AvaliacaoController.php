@@ -18,33 +18,7 @@ class AvaliacaoController extends Controller
 
     private function saveAvaliacoes($avaliacoes)
     {
-        Storage::put('avaliacoes.json', json_encode($avaliacoes, JSON_PRETTY_PRINT));
-    }
-
-    private function usuarioExiste($id)
-    {
-        if (!Storage::exists('usuarios.json')) return false;
-
-        $usuarios = json_decode(Storage::get('usuarios.json'), true) ?? [];
-
-        foreach ($usuarios as $u) {
-            if ($u['id_usuario'] == $id) return true;
-        }
-
-        return false;
-    }
-
-    private function buscarProduto($id)
-    {
-        if (!Storage::exists('produtos.json')) return null;
-
-        $produtos = json_decode(Storage::get('produtos.json'), true) ?? [];
-
-        foreach ($produtos as $p) {
-            if ($p['id_produto'] == $id) return $p;
-        }
-
-        return null;
+        Storage::put('avaliacoes.json', json_encode($avaliacoes));
     }
 
     public function index()
@@ -54,16 +28,6 @@ class AvaliacaoController extends Controller
 
     public function store(Request $request)
     {
-        if (!$this->usuarioExiste($request->id_usuario)) {
-            return response()->json(['erro' => 'Usuário não existe'], 400);
-        }
-
-        $produto = $this->buscarProduto($request->id_produto);
-
-        if (!$produto) {
-            return response()->json(['erro' => 'Produto não existe'], 400);
-        }
-
         if ($request->nota < 0 || $request->nota > 5) {
             return response()->json(['erro' => 'Nota deve ser entre 0 e 5'], 400);
         }
@@ -98,6 +62,7 @@ class AvaliacaoController extends Controller
 
         return response()->json(['erro' => 'Avaliação não encontrada'], 404);
     }
+
 
     public function update(Request $request, $id)
     {
